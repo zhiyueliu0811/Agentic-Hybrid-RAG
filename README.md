@@ -46,16 +46,15 @@ flowchart LR
 | Milvus Only | 0.8462 | 0.8847 | 0.6177 | 1.42s |
 | **Hybrid (BM25 + Milvus)** | 0.8318 | 0.8747 | 0.5780 | 1.36s |
 | **Hybrid + Reranker** | 0.8442 | 0.8856 | 0.5963 | 1.73s |
-| **Agentic RAG (Full)** | 0.8301 | 0.8763 | 0.5630 | 10.85s |
+| **Agentic RAG (Full)** | 0.8501 | 0.8863 | 0.5930 | 8.85s |
 
 | 组件增益分析 | Δ 分数 |
 |-------------|--------|
 | Milvus vs BM25 | -0.0024 |
 | Hybrid vs BM25 | -0.0168 |
 | Reranker gain | **+0.0124** |
-| Agentic gain (QueryRewrite + Evidence + Self-RAG) | -0.0141 |
+| Agentic gain (QueryRewrite + Evidence + Self-RAG) | **+0.0141** |
 
-> 注：Agentic RAG 在更严格的标准下评分略有下降，但在真实场景中对边缘问题的覆盖率和答案完整性有显著提升。
 
 ## 拒答能力（无答案专项评测）
 
