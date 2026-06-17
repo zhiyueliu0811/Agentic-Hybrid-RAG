@@ -1,0 +1,44 @@
+[
+  {
+    "unique_id": "example_001",
+    "question": "离车后自动上锁怎么设置？",
+    "answer": "在触摸屏上点击控制 > 车锁 > 离车后自动上锁，即可开启该功能。",
+    "keywords": ["离车", "自动上锁", "车锁"]
+  },
+  {
+    "unique_id": "example_002",
+    "question": "Model 3 的空调怎么开？",
+    "answer": "点击触摸屏底部温度图标进入空调控制界面，选择自动模式，设定期望温度即可开启。",
+    "keywords": ["空调", "温度", "触摸屏"]
+  },
+  {
+    "unique_id": "example_003",
+    "question": "怎么用手机钥匙解锁 Model 3？",
+    "answer": "确保手机蓝牙已开启，打开特斯拉 App 并登录账户，靠近车辆时车门将自动解锁。",
+    "keywords": ["手机钥匙", "蓝牙", "解锁"]
+  },
+  {
+    "unique_id": "example_004",
+    "question": "超级充电站充电需要多长时间？",
+    "answer": "超级充电站可在约 15 分钟内补充最多 275 公里的续航里程。",
+    "keywords": ["超级充电", "充电站", "续航"]
+  },
+  {
+    "unique_id": "example_005",
+    "question": "自动驾驶辅助怎么激活？",
+    "answer": "在行驶过程中，将换挡杆快速向下拨动两次即可激活自动辅助转向功能。",
+    "keywords": ["自动驾驶", "激活", "换挡杆"]
+  },
+  {
+    "unique_id": "example_006",
+    "question": "你好",
+    "answer": "无答案",
+    "keywords": []
+  },
+  {
+    "unique_id": "example_007",
+    "question": "今天天气怎么样？",
+    "answer": "无答案",
+    "keywords": []
+  }
+]

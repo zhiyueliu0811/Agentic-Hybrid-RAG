@@ -1,0 +1,50 @@
+[
+  {
+    "question": "怎么做红烧肉？",
+    "answer": "无答案",
+    "keywords": [],
+    "type": "out_of_scope"
+  },
+  {
+    "question": "感冒了应该吃什么药？",
+    "answer": "无答案",
+    "keywords": [],
+    "type": "out_of_scope"
+  },
+  {
+    "question": "Python 的列表和元组有什么区别？",
+    "answer": "无答案",
+    "keywords": [],
+    "type": "out_of_scope"
+  },
+  {
+    "question": "今天特斯拉股价是多少？",
+    "answer": "无答案",
+    "keywords": [],
+    "type": "real_time"
+  },
+  {
+    "question": "Model 3 现在还有哪些颜色可以选？",
+    "answer": "无答案",
+    "keywords": [],
+    "type": "real_time"
+  },
+  {
+    "question": "特斯拉能飞吗？",
+    "answer": "无答案",
+    "keywords": [],
+    "type": "irrelevant"
+  },
+  {
+    "question": "如何在车里用特斯拉方向盘上的按钮来控制游戏？",
+    "answer": "无答案",
+    "keywords": [],
+    "type": "irrelevant"
+  },
+  {
+    "question": "Model 3 的自动驾驶能自动帮我买菜吗？",
+    "answer": "无答案",
+    "keywords": [],
+    "type": "irrelevant"
+  }
+]

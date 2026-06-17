@@ -1,0 +1,46 @@
+# 外部框架和依赖
+LLaMA-Factory-main/
+RAG-Retrieval/
+mongodb-7.0.20/
+
+# 日志
+log/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# 环境变量和密钥
+.env
+.env.*
+!.env.example
+
+# 模型权重（体积巨大，通过 HuggingFace/ModelScope 下载）
+models/
+
+# 数据和索引
+data/
+data/mongodb/data/
+data/saved_index/
+
+# 项目存档
+*.zip
+*.tar.gz
+
+# Claude 本地配置
+.claude/settings.local.json
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
