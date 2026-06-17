@@ -3,6 +3,7 @@
 
 import re
 import json
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from langchain_core.documents import Document
 from src.agents.prompts import CITATION_VERIFY_PROMPT
 
@@ -65,6 +66,14 @@ class CitationVerifier:
             return {"support_status": "unknown", "reason": f"LLM 调用失败: {e}"}
 
     def verify(self, raw_answer: str, ranked_docs: list[Document], query: str = "") -> dict:
+        if raw_answer is None:
+            return {
+                "verified": True,
+                "claim_results": [],
+                "unsupported_count": 0,
+                "partial_count": 0,
+            }
+
         claim_results = []
         unsupported_count = 0
         partial_count = 0
@@ -101,21 +110,21 @@ class CitationVerifier:
                 "partial_count": 0,
             }
 
+        # 准备需要 LLM 判决的 claim 任务
+        judge_tasks = []  # (claim, cite_ids, evidence_text)
         for item in claims:
             claim = item["claim"]
             cite_ids = item["cited_doc_ids"]
 
             if not cite_ids:
                 claim_results.append({
-                    "claim": claim,
-                    "cited_doc_ids": [],
+                    "claim": claim, "cited_doc_ids": [],
                     "support_status": "no_citation",
                     "reason": "该句未标注引用",
                 })
                 unsupported_count += 1
                 continue
 
-            # 收集所有被引用文档的内容作为 evidence
             evidence_parts = []
             valid_ids = []
             for cid in cite_ids:
@@ -128,24 +137,32 @@ class CitationVerifier:
 
             if not valid_ids:
                 claim_results.append({
-                    "claim": claim,
-                    "cited_doc_ids": cite_ids,
+                    "claim": claim, "cited_doc_ids": cite_ids,
                     "support_status": "invalid_citation",
                     "reason": "引用编号超出文档范围",
                 })
                 unsupported_count += 1
                 continue
 
-            evidence = "\n\n".join(evidence_parts)
-            judge = self._judge_one(claim, evidence)
-            judge["claim"] = claim
-            judge["cited_doc_ids"] = cite_ids
-            claim_results.append(judge)
+            judge_tasks.append((claim, cite_ids, "\n\n".join(evidence_parts)))
 
-            if judge["support_status"] in ("partial", "not_support", "unknown", "invalid_citation", "no_citation"):
-                unsupported_count += 1
-                if judge["support_status"] == "partial":
-                    partial_count += 1
+        # 并行执行 LLM 判决
+        if judge_tasks:
+            with ThreadPoolExecutor(max_workers=4) as executor:
+                futures = {
+                    executor.submit(self._judge_one, claim, evidence): (claim, cite_ids)
+                    for claim, cite_ids, evidence in judge_tasks
+                }
+                for future in as_completed(futures):
+                    claim, cite_ids = futures[future]
+                    judge = future.result()
+                    judge["claim"] = claim
+                    judge["cited_doc_ids"] = cite_ids
+                    claim_results.append(judge)
+                    if judge["support_status"] in ("partial", "not_support", "unknown", "invalid_citation", "no_citation"):
+                        unsupported_count += 1
+                        if judge["support_status"] == "partial":
+                            partial_count += 1
 
         return {
             "verified": unsupported_count == 0,

@@ -2,7 +2,10 @@
 # EvidenceAgent：判断证据是否足够支撑答案
 
 import json
+import logging
 from src.agents.prompts import EVIDENCE_JUDGE_PROMPT
+
+logger = logging.getLogger(__name__)
 
 
 class EvidenceAgent:
@@ -53,5 +56,5 @@ class EvidenceAgent:
             return result
 
         except Exception as e:
-            print(f"[EvidenceAgent] 调用失败: {e}，使用 fallback")
+            logger.warning("调用失败: %s，使用 fallback", e)
             return fallback

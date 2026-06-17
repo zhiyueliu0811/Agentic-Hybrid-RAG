@@ -14,8 +14,12 @@ import json
 import time
 import hashlib
 import argparse
+import logging
+import traceback
 from text2vec import SentenceModel, semantic_search
 from tqdm import tqdm
+
+logger = logging.getLogger(__name__)
 
 # 确保项目根目录在 sys.path 中
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -231,7 +235,7 @@ class AblationEval:
                 )
 
             except Exception as e:
-                print(f"\n  [ERROR] 问题 '{question[:40]}...' 处理失败: {e}")
+                logger.error("问题 '%s...' 处理失败: %s\n%s", question[:40], e, traceback.format_exc())
                 pred_answer = ""
                 latency = time.time() - t0
                 score, semantic_sim, keyword_score = 0.0, 0.0, 0.0

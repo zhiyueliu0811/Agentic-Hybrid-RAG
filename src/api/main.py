@@ -63,7 +63,7 @@ async def chat_stream(req: ChatRequest):
 
     async def event_generator():
         # 后台运行管线
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         result_holder = {}
 
         def run_pipeline():

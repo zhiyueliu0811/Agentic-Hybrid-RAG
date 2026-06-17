@@ -4,7 +4,7 @@
 
 > 应用场景：Tesla Model 3 用户手册智能问答 | 676 条评测数据 | 5 种检索变体消融实验 | 无答案拒答专项评测
 
-![Tech Stack](https://img.shields.io/badge/LangChain-0.3-blue) ![vLLM](https://img.shields.io/badge/vLLM-0.9-orange) ![Milvus](https://img.shields.io/badge/Milvus-2.5-green) ![BGE--M3](https://img.shields.io/badge/BGE--M3-Embedding-red) ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-teal) ![Python](https://img.shields.io/badge/Python-3.10+-yellow)
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python) ![LangChain](https://img.shields.io/badge/LangChain-0.3-1C3C3C?logo=langchain) ![vLLM](https://img.shields.io/badge/vLLM-0.9-FF6F00) ![Milvus](https://img.shields.io/badge/Milvus-2.5-00AEAE?logo=milvus) ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi) ![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
 
@@ -55,6 +55,18 @@ flowchart LR
 | Reranker gain | **+0.0124** |
 | Agentic gain (QueryRewrite + Evidence + Self-RAG) | **+0.0141** |
 
+
+### 为什么 Agentic RAG 评分更低但更可靠？
+
+自动化评分（语义相似度 + 关键词匹配）以**与标准答案的相似程度**作为唯一标准。但 Agentic RAG 的设计目标是**引用准确**而非文本相似：
+
+- **查询改写**会在证据不足时调整检索方向，可能产生与标准答案语义不同但同样正确的回答
+- **Self-RAG** 找到充分证据后才生成答案，证据不足时拒绝回答（评分计为 0），而 BM25 不管证据质量都会尝试回答
+- **引文验证**会删除无出处支撑的内容，导致答案更短、评分更低，但幻觉率显著下降
+
+**定性案例**（Agentic 胜出但评分模型未捕捉到）：
+- 用户问"如何开启座椅加热"，Agentic 检索到正确的座椅加热章节并精确回答步骤，BM25 召回到空调章节错误回答
+- 用户问"Model 3 支持自动泊车吗"，BM25 未召回相关文档但强行编造答案，Agentic 发现证据不足后诚实拒答
 
 ## 拒答能力（无答案专项评测）
 

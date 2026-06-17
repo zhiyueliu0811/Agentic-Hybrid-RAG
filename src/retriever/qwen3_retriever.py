@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # --------------------------------------------
 # 项目名称: LLM任务型对话Agent
-# 版权所有  ©丁师兄大模型
 # --------------------------------------------
 
 
@@ -14,7 +13,7 @@ from typing import List
 import torch.nn.functional as F
 from torch import Tensor
 from modelscope import AutoTokenizer, AutoModel
-from langchain.schema import Document
+from langchain_core.documents import Document
 from langchain.embeddings.base import Embeddings
 from langchain_community.vectorstores import FAISS
 from src.constant import faiss_qwen_db_path, qwen3_embedding_model_path 

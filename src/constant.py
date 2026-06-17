@@ -31,16 +31,3 @@ bge_reranker_tuned_model_path = base_dir + "RAG-Retrieval/rag_retrieval/train/re
 bge_reranker_minicpm_path = base_dir + "models/bge-reranker-v2-minicpm-layerwise"
 text2vec_model_path = base_dir + "models/text2vec-base-chinese"
 qwen3_8b_tune_model_name = base_dir + "LLaMA-Factory-main/output/qwen3_lora_sft_int4"
-
-# Prompt 模板
-LLM_CHAT_PROMPT = """
-### 信息
-{context}
-
-### 任务
-你是特斯拉电动汽车Model 3车型的用户手册问答系统，你具备{{信息}}中的知识。
-请回答问题"{query}"，答案需要精准，语句通顺，并严格按照以下格式输出
-
-{{答案}}【{{引用编号1}}, {{引用编号2}}, ...】
-如果无法从中得到答案，请说 "无答案" ，不允许在答案中添加编造成分。
-"""

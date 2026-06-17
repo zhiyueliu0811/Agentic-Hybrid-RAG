@@ -73,9 +73,25 @@ nohup $VLLM serve $PROJECT_DIR/LLaMA-Factory-main/output/qwen3_lora_sft_int4 \
     --enforce-eager \
     > $PROJECT_DIR/log/qwen3-7b.log 2>&1 &
 VLLM_PID=$!
-echo "  vLLM 已启动 (PID: $VLLM_PID)，等待加载（约3分钟）..."
-sleep 180
-echo "  vLLM 加载完成"
+echo "  vLLM 已启动 (PID: $VLLM_PID)，等待加载..."
+
+# 轮询 vLLM 健康检查，最多等待 5 分钟
+MAX_WAIT=300
+ELAPSED=0
+POLL_INTERVAL=5
+while [ $ELAPSED -lt $MAX_WAIT ]; do
+    sleep $POLL_INTERVAL
+    ELAPSED=$((ELAPSED + POLL_INTERVAL))
+    if curl -s http://localhost:8000/health > /dev/null 2>&1; then
+        echo "  vLLM 加载完成（耗时 ${ELAPSED}s）"
+        break
+    fi
+    echo "  等待中...（${ELAPSED}s/${MAX_WAIT}s）"
+done
+
+if [ $ELAPSED -ge $MAX_WAIT ]; then
+    echo "  警告: vLLM 未在 ${MAX_WAIT}s 内就绪，继续启动后续服务"
+fi
 
 # ------ 7. 启动 Web Demo（Gradio）------
 echo "[4/5] 启动 Web Demo (http://localhost:7860)..."

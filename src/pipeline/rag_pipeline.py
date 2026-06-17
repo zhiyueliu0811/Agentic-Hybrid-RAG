@@ -160,7 +160,10 @@ class RAGPipeline:
             response = ""
             res_handler = self.answer_agent.generate(query, ranked_docs, stream=True)
             for r in res_handler:
-                token = r.choices[0].delta.content
+                try:
+                    token = r.choices[0].delta.content
+                except (AttributeError, IndexError, KeyError):
+                    continue
                 if token is None:
                     continue
                 response += token

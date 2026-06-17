@@ -2,8 +2,12 @@
 # QueryAgent：问题改写 + 分类
 
 import json
+import time
+import logging
 from src.agents.prompts import QUERY_REWRITE_PROMPT
 from src.agents.query_schema import QueryRewriteResult
+
+logger = logging.getLogger(__name__)
 
 
 class QueryAgent:
@@ -56,10 +60,13 @@ class QueryAgent:
                     result.setdefault("intent", "knowledge_qa")
                     return result
                 if attempt < self.max_retries:
+                    time.sleep(2 ** attempt)
                     continue
             except Exception as e:
                 if attempt < self.max_retries:
+                    logger.warning("第 %d 次尝试失败: %s，%ds 后重试", attempt + 1, e, 2 ** attempt)
+                    time.sleep(2 ** attempt)
                     continue
-                print(f"[QueryAgent] 调用失败: {e}，使用 fallback")
+                logger.warning("调用失败: %s，使用 fallback", e)
 
         return fallback

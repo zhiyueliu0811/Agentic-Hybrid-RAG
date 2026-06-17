@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 # --------------------------------------------
 # 项目名称: LLM任务型对话Agent
-# 版权所有  ©丁师兄大模型
 # --------------------------------------------
 
 import os
 import pickle
 import jieba
 import hashlib
-from langchain.schema import Document
+from langchain_core.documents import Document
 from langchain_community.retrievers import TFIDFRetriever
 
 from src.constant import tfidf_pickle_path

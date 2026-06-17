@@ -5,7 +5,7 @@
 
 from openai import OpenAI
 from src.config import VLLM_API_KEY, VLLM_BASE_URL, VLLM_MODEL_NAME as _vllm_model
-from src.constant import LLM_CHAT_PROMPT
+from src.agents.prompts import ANSWER_GENERATION_PROMPT
 
 
 llm_client = OpenAI(
@@ -16,7 +16,7 @@ llm_client = OpenAI(
 
 def request_chat(query, context, stream=False):
 
-    prompt = LLM_CHAT_PROMPT.format(context=context, query=query) 
+    prompt = ANSWER_GENERATION_PROMPT.format(context=context, query=query)
 
     completion = llm_client.chat.completions.create(
         model=_vllm_model,
