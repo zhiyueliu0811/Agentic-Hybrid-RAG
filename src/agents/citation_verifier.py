@@ -63,7 +63,7 @@ class CitationVerifier:
                 "reason": result.get("reason", ""),
             }
         except Exception as e:
-            return {"support_status": "unknown", "reason": f"LLM 调用失败: {e}"}
+            return {"support_status": "unknown", "reason": f"LLM call failed: {e}"}
 
     def verify(self, raw_answer: str, ranked_docs: list[Document], query: str = "") -> dict:
         if raw_answer is None:

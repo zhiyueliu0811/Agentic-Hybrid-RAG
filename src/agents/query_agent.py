@@ -64,9 +64,9 @@ class QueryAgent:
                     continue
             except Exception as e:
                 if attempt < self.max_retries:
-                    logger.warning("第 %d 次尝试失败: %s，%ds 后重试", attempt + 1, e, 2 ** attempt)
+                    logger.warning("Attempt %d failed: %s, retrying in %ds", attempt + 1, e, 2 ** attempt)
                     time.sleep(2 ** attempt)
                     continue
-                logger.warning("调用失败: %s，使用 fallback", e)
+                logger.warning("LLM call failed: %s, using fallback", e)
 
         return fallback

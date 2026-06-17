@@ -5,6 +5,9 @@
 
 
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 import hashlib
 import torch
 import pandas as pd
@@ -98,7 +101,7 @@ class MilvusRetriever:
                 texts_embeddings["dense"][i : i + EMB_BATCH],
             ]
             self.col.insert(batched_entities)
-        print("索引构建完成，插入了{}条数据:".format(self.col.num_entities))
+        logger.info("索引构建完成，插入了 %d 条数据", self.col.num_entities)
 
     #dense检索
     def dense_search(self, query_dense_embedding, limit):

@@ -7,6 +7,9 @@ import os
 from pprint import pprint
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, ConfigurationError
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class MongoConfig:
@@ -50,7 +53,7 @@ class MongoConfig:
                 # 验证连接
                 cls._client.admin.command('ping')
                 cls._db = cls._client[cls._db_name]
-                print("Successfully connected to MongoDB")
+                logger.info("Successfully connected to MongoDB")
 
             except ConfigurationError as e:
                 raise RuntimeError(f"MongoDB configuration error: {str(e)}")
@@ -78,7 +81,7 @@ class MongoConfig:
             cls._client.close()
             cls._client = None
             cls._db = None
-            print("MongoDB connection closed")
+            logger.info("MongoDB connection closed")
 
 
 # 懒加载：首次调用 get_db/get_collection 时才连接

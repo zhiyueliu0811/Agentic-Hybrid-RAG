@@ -6,6 +6,9 @@
 import random
 import json
 import requests
+import logging
+
+logger = logging.getLogger(__name__)
 import os
 import pickle
 from typing import List
@@ -34,7 +37,7 @@ def request_semantic_chunk(sentences, group_size):
         res = response.json()
         text = res["chunks"]
     except Exception as e:
-        print(f"call reject failed:{e}")
+        logger.warning("call rejected: %s", e)
         text = [sentences]
     return text
 

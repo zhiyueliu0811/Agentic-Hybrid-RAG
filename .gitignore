@@ -6,6 +6,10 @@ mongodb-7.0.20/
 # 日志
 log/
 
+# 个人文件（本地保留，不上传）
+TODO.md
+.pytest_cache/
+
 # Python
 __pycache__/
 *.pyc

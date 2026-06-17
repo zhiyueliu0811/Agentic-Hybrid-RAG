@@ -151,7 +151,7 @@ class RAGPipeline:
             ret2 = self.retrieval_agent.retrieve(sq, sc["bm25_topk"], sc["milvus_topk"])
             all_merged = merge_docs(ret["merged_docs"], ret2["merged_docs"])
             ranked_docs, ranked_scores = self.reranker.rank(
-                query, all_merged, sc["rerank_topk"], return_scores=True,
+                sq, all_merged, sc["rerank_topk"], return_scores=True,
             )
             result["second_merged_count"] = len(all_merged)
 
