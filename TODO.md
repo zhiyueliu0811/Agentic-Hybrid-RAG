@@ -12,87 +12,102 @@
 - [x] 创建 git 分支 `rl/orpo-training`
 - [x] 保存计划书 `RL_PLAN.md`
 - [x] 创建 `TODO.md`
-- [x] 下载 Qwen2.5-14B-Instruct-AWQ 模型（9.4GB, done）
-- [ ] 新增 `src/client/llm_judge_client.py`（本地 judge 客户端，端口 :8001）
-- [ ] 启动 vLLM judge 服务（需要 GPU）
+- [x] 下载 Qwen2.5-14B-Instruct-AWQ 模型（9.4GB）
+- [x] 新增 `src/client/llm_judge_client.py`
+- [x] 启动 vLLM judge 服务，验证可用
 
-### Phase 0.5: Citation Judge 校准
+### ⏭️ Phase 0.5: Citation Judge 校准（跳过）
 
-- [ ] 新增 `src/rl/calibrate_judge.py`
-- [ ] 抽 50 条答案，对比本地 judge vs 远程 Qwen-Plus 一致率
-- [ ] 一致率 ≥ 88% → 继续；< 85% → 调整 prompt 或降级为 text2vec
+- [ ] 跳过了形式化校准（因采用合成偏好对方案，不依赖 judge 精度）
 
-### Phase 1: 生成候选答案
+### ✅ Phase 1: 生成候选答案
 
-- [ ] 新增 `src/rl/__init__.py`
-- [ ] 新增 `src/rl/generate_candidates.py`
-- [ ] 运行：2300 queries × 4 temperatures → `data/rl/candidates.json`
-- [ ] 需要 GPU（vLLM :8000）
+- [x] 新增 `src/rl/__init__.py`
+- [x] 新增 `src/rl/generate_candidates.py`（ThreadPoolExecutor 并行，断点续跑）
+- [x] 生成 160 条候选答案（300 queries × 4 temperatures）
+- [x] 发现：SFT 模型输出高度确定性（72% 答案完全相同）
 
-### Phase 2: Citation Judge 打分
+### ✅ Phase 2: Citation Judge 打分
 
-- [ ] 新增 `src/rl/reward.py`
-- [ ] 新增 `src/rl/score_candidates.py`
-- [ ] 运行：9200 个答案 × judge → `data/rl/scored_candidates.json`
-- [ ] 需要 GPU（vLLM :8001）
+- [x] 新增 `src/rl/reward.py`
+- [x] 新增 `src/rl/score_candidates.py`
+- [x] 用本地 Qwen2.5-14B judge 给所有候选打分
+- [x] 发现：同一 query 的 4 个 temperature 答案 reward 差距极小，难以构造自然偏好对
 
-### Phase 3: 构造偏好对
+### ✅ Phase 3: 构造偏好对
 
-- [ ] 新增 `src/rl/build_preference_pairs.py`
-- [ ] 运行：过滤 + 构造 pairwise 格式 → `LLaMA-Factory-main/data/rag_preference.json`
-- [ ] 人工抽查 50 对，确认 chosen > rejected
-- [ ] 不需要 GPU
+- [x] 新增 `src/rl/build_preference_pairs.py`
+- [x] **策略调整**：用合成方式构造偏好对（去引用/截断/假引用），300 对
+- [x] 数据格式：LLaMA-Factory sharegpt pairwise（`conversations` + `chosen`/`rejected` dict）
+- [x] 注册 `rag_preference` 数据集到 `dataset_info.json`
 
-### Phase 4: ORPO 训练
+### ⚠️ Phase 4: ORPO 训练（受阻）
 
-- [ ] 新增 `LLaMA-Factory-main/examples/train_lora/qwen3_lora_orpo.yaml`
-- [ ] 修改 `LLaMA-Factory-main/data/dataset_info.json`，注册 `rag_preference` 数据集
-- [ ] 运行 `llamafactory-cli train`
-- [ ] 需要 GPU
+- [x] 新增 `LLaMA-Factory-main/examples/train_lora/qwen3_lora_orpo.yaml`
+- [x] LLaMA-Factory 0.9.3 安装完成
+- [ ] **受阻**：AWQ 量化模型 + Triton 3.3.0 内核编译失败
+- [ ] **修复方案**：下载 Qwen3-8B BF16 基础模型（~16GB），以 BF16 精度做 ORPO 训练
 
-### Phase 5: 评估
+### ⏭️ Phase 5: 评估（待 Phase 4 完成后）
 
 - [ ] 运行 `eval/ablation_eval.py`
 - [ ] 运行 `eval/no_answer_eval.py --mode agentic`
 - [ ] 运行 `badcase_analyzer.py`
 - [ ] 人工抽查 30 条 ORPO 答案 vs SFT 答案
-- [ ] 需要 GPU
-
-### Plan B（如果 ORPO 效果不好）
-
-- [ ] 方案 1：用 judge 过滤 SFT 数据，重新 SFT
-- [ ] 方案 2：人工标注 200-500 条，训 Reward Model → PPO
-- [ ] 方案 3：转向重排序器 listwise RL
 
 ---
 
-## GPU 需求总览
+## 当前阻塞与解决方案
 
-| 步骤 | GPU | 预估时长 |
-|------|-----|---------|
-| 下载模型 | 否 | ~10 分钟 |
-| 代码开发 | 否 | 不限 |
-| 启动 judge vLLM | **是** | ~2 分钟 |
-| Phase 1: 生成候选 | **是** | ~3 小时 |
-| Phase 2: 打分 | **是** | ~6-8 小时 |
-| Phase 3: 构造偏好对 | 否 | ~10 分钟 |
-| Phase 4: ORPO 训练 | **是** | ~30 分钟 |
-| Phase 5: 评估 | **是** | ~2 小时 |
+### 问题：AWQ 量化模型 + Triton 兼容性
+
+```
+triton.compiler.errors.CompilationError: at 108:22:
+    accumulator = tl.dot(a, b, accumulator, out_dtype=accumulator_dtype)
+```
+
+**原因**：合并后的 SFT 模型是 AWQ INT4 量化格式。Triton 3.3.0（torch 2.7.0 要求）与 AWQ 库的内核不兼容。
+
+**解决方案（按推荐度排序）**：
+
+1. **下载 Qwen3-8B BF16 基础模型**（推荐，16GB）：
+   ```bash
+   modelscope download Qwen/Qwen3-8B --local_dir /root/autodl-tmp/RAG/models/Qwen3-8B/
+   ```
+   然后在 YAML 中加载基础模型 + SFT LoRA adapter：
+   ```yaml
+   model_name_or_path: /root/autodl-tmp/RAG/models/Qwen3-8B/
+   adapter_name_or_path: saves/qwen3-8b/lora/sft/
+   ```
+
+2. **用 vLLM 做推理时优化替代训练**：跳过 ORPO 训练，直接在推理时用更严格的 prompt + citation 校验来提升质量
+
+3. **转向重排序器 RL**：用 text2vec 做奖励信号，对 BGE-M3 Reranker 做 listwise RL
 
 ---
 
-## 新增文件清单
+## GPU 用量记录
 
-| 文件 | 状态 |
-|------|------|
-| `RL_PLAN.md` | ✅ |
-| `TODO.md` | ✅ |
-| `src/client/llm_judge_client.py` | ⬜ |
-| `src/rl/__init__.py` | ⬜ |
-| `src/rl/calibrate_judge.py` | ⬜ |
-| `src/rl/generate_candidates.py` | ⬜ |
-| `src/rl/reward.py` | ⬜ |
-| `src/rl/score_candidates.py` | ⬜ |
-| `src/rl/build_preference_pairs.py` | ⬜ |
-| `LLaMA-Factory-main/data/rag_preference.json` | ⬜ |
-| `LLaMA-Factory-main/examples/train_lora/qwen3_lora_orpo.yaml` | ⬜ |
+| 步骤 | 模型 | VRAM | 状态 |
+|------|------|------|------|
+| Phase 1 候选生成 | Qwen3-8B INT4 vLLM :8000 | ~10GB | ✅ |
+| Phase 2 打分 | Qwen2.5-14B INT4 vLLM :8001 | ~12GB | ✅ |
+| Phase 4 ORPO 训练 | Qwen3-8B BF16 LoRA | ~18GB | ⚠️ 受阻 |
+
+---
+
+## 新增/修改文件清单
+
+| 文件 | 状态 | 说明 |
+|------|------|------|
+| `src/client/llm_judge_client.py` | ✅ | 本地 judge 客户端（端口 :8001） |
+| `src/rl/__init__.py` | ✅ | RL 模块 |
+| `src/rl/generate_candidates.py` | ✅ | 并行候选生成 + 断点续跑 |
+| `src/rl/reward.py` | ✅ | 组合奖励函数 |
+| `src/rl/score_candidates.py` | ✅ | 本地 judge 批量打分 |
+| `src/rl/build_preference_pairs.py` | ✅ | 偏好对构造 |
+| `LLaMA-Factory-main/data/rag_preference.json` | ✅ | 300 对 sharegpt 格式 |
+| `LLaMA-Factory-main/examples/train_lora/qwen3_lora_orpo.yaml` | ✅ | ORPO 训练配置 |
+| `LLaMA-Factory-main/data/dataset_info.json` | ✏️ | 注册 rag_preference |
+| `data/rl/candidates.jsonl` | ✅ | 160 条候选答案 |
+| `data/rl/scored_candidates.jsonl` | ✅ | 298 条评分结果 |
