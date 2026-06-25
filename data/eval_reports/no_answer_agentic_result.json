@@ -1,0 +1,82 @@
+{
+  "metrics": {
+    "no_answer_precision": 1.0,
+    "no_answer_recall": 0.85,
+    "hallucination_rate": 0.15,
+    "false_refusal_rate": 0.0,
+    "tp": 51,
+    "fp": 0,
+    "fn": 9,
+    "total_no_answer": 60,
+    "total_has_answer": 50,
+    "mode": "agentic"
+  },
+  "breakdown_by_type": {
+    "out_of_scope": {
+      "count": 15,
+      "refused": 15,
+      "answered": 0,
+      "refusal_rate": 1.0
+    },
+    "real_time": {
+      "count": 10,
+      "refused": 10,
+      "answered": 0,
+      "refusal_rate": 1.0
+    },
+    "irrelevant": {
+      "count": 10,
+      "refused": 8,
+      "answered": 2,
+      "refusal_rate": 0.8
+    }
+  },
+  "hallucination_examples": [
+    {
+      "question": "你好漂亮",
+      "pred": "你好！感谢你的夸奖，我是一个人工智能助手，很高兴为你提供帮助。如果你有任何关于特斯拉Model 3的问题，欢迎随时提问！",
+      "type": "irrelevant"
+    },
+    {
+      "question": "你会取代人类的工作吗？",
+      "pred": "智能辅助驾驶系统可以执行变道、左转和右转，沿着匝道入口和出口行驶，并在必要时走岔路口到达目的地。然而，智能辅助驾驶及其相关功能可能无法按预期工作，在很多情况下可能需要驾驶员干预驾驶。",
+      "type": "irrelevant"
+    },
+    {
+      "question": "大众你好",
+      "pred": "你好！有什么可以帮助你的吗？",
+      "type": ""
+    },
+    {
+      "question": "我要去那",
+      "pred": "您可以通过以下语音命令导航到某个地点：\n - “去[地点]”\n - “开到[地点]”",
+      "type": ""
+    },
+    {
+      "question": "我想听他的歌曲",
+      "pred": "您可以通过点击媒体播放器的放大镜图标来搜索特定歌曲、专辑、艺术家、播客或电台。",
+      "type": ""
+    },
+    {
+      "question": "放一首这个类型的音乐",
+      "pred": "<ERROR: Error code: 400 - {'object': 'error', 'message': \"This model's maximum context length is 4096 tokens. However, you requested 4277 tokens (2229 in the messages, 2048 in the completion). Please reduce the length of the messages or completion. None\", 'type': 'BadRequestError', 'param': None, 'code': 400}>",
+      "type": ""
+    },
+    {
+      "question": "我想听里面女主持人唱的歌",
+      "pred": "您可以通过语音命令“听[歌曲名称]”来收听特定的歌曲。",
+      "type": ""
+    },
+    {
+      "question": "现在出发去吃吧",
+      "pred": "您可以说“去[地点]”来导航到某个地点，例如“去吃吧”。",
+      "type": ""
+    },
+    {
+      "question": "你说20度他以为就是你他只调你的你说主驾位置调一个温度再把副驾温度调到另外一个温度好吧两个两个指定",
+      "pred": "在Model 3中，可以通过温度弹出窗口启用温度分区功能，驾驶员和前排乘客可以利用此功能自定义其温度偏好。",
+      "type": ""
+    }
+  ],
+  "false_refusal_examples": []
+}
