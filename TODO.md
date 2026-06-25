@@ -12,7 +12,7 @@
 - [x] 创建 git 分支 `rl/orpo-training`
 - [x] 保存计划书 `RL_PLAN.md`
 - [x] 创建 `TODO.md`
-- [ ] 下载 Qwen2.5-14B-Instruct-AWQ 模型
+- [x] 下载 Qwen2.5-14B-Instruct-AWQ 模型（9.4GB, done）
 - [ ] 新增 `src/client/llm_judge_client.py`（本地 judge 客户端，端口 :8001）
 - [ ] 启动 vLLM judge 服务（需要 GPU）
 
