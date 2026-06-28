@@ -12,7 +12,7 @@ class AnswerAgent:
     def generate(self, query: str, ranked_docs: list, stream: bool = False):
         context_parts = []
         for idx, doc in enumerate(ranked_docs):
-            content = doc.page_content[:400]
+            content = doc.page_content[:200]
             context_parts.append(f"【{idx+1}】{content}")
         context = "\n\n".join(context_parts)
 
@@ -24,9 +24,9 @@ class AnswerAgent:
                 {"role": "system", "content": "你是一个有用的人工智能助手."},
                 {"role": "user", "content": prompt},
             ],
-            max_tokens=2048,
-            frequency_penalty=2.0,
-            temperature=0.001,
+            max_tokens=1024,
+            frequency_penalty=0.0,
+            temperature=0.1,
             top_p=0.95,
             stream=stream,
             timeout=120,
@@ -37,7 +37,7 @@ class AnswerAgent:
         )
 
         if not stream:
-            return completion.choices[0].message.content
+            return completion.choices[0].message.content or ""
 
         return completion
 
@@ -46,7 +46,7 @@ class AnswerAgent:
         """引用校验失败后，只基于被支持的证据重写答案"""
         context_parts = []
         for idx, doc in enumerate(ranked_docs):
-            content = doc.page_content[:400]
+            content = doc.page_content[:200]
             context_parts.append(f"【{idx+1}】{content}")
         context = "\n\n".join(context_parts)
 
@@ -73,9 +73,9 @@ class AnswerAgent:
                 {"role": "system", "content": "你是一个有用的人工智能助手."},
                 {"role": "user", "content": prompt},
             ],
-            max_tokens=2048,
-            frequency_penalty=2.0,
-            temperature=0.001,
+            max_tokens=1024,
+            frequency_penalty=0.0,
+            temperature=0.1,
             top_p=0.95,
             timeout=120,
             extra_body={
@@ -84,4 +84,4 @@ class AnswerAgent:
             },
         )
 
-        return completion.choices[0].message.content
+        return completion.choices[0].message.content or ""

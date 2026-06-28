@@ -52,11 +52,13 @@ def compute_reward(
     """
     answer_text = answer_text.strip() if answer_text else ""
 
+    refusal_patterns = ["无答案", "无法回答", "抱歉", "无法提供", "无法确定"]
+
     # 1. Citation Support Rate (主信号, 0~1)
     total_claims = len(claim_results)
     if total_claims == 0:
-        # 无 claim：可能是"无答案"或短回答
-        if "无答案" in answer_text:
+        # 无 claim：可能是拒答或短回答
+        if any(p in answer_text for p in refusal_patterns):
             return 0.5  # 中性分，依赖偏好对上下文
         else:
             # 有实质内容但无引用 → 惩罚
@@ -70,7 +72,7 @@ def compute_reward(
     )
     unsupported_count = sum(
         1 for c in claim_results
-        if c.get("support_status") in ("not_support", "no_citation", "invalid_citation")
+        if c.get("support_status") in ("not_support", "no_citation", "invalid_citation", "unknown")
     )
 
     citation_support_rate = support_count / total_claims
@@ -80,8 +82,8 @@ def compute_reward(
     answer_length = len(answer_text)
     length_bonus = min(answer_length / 200.0, 0.1)  # 200 字以上给满 0.1
 
-    # 3. "无答案" 惩罚（有上下文时不应轻易说不）
-    refusal_penalty = -0.3 if "无答案" in answer_text and num_context_docs > 0 else 0.0
+    # 3. 拒答惩罚（有上下文时不应轻易说拒答）
+    refusal_penalty = -0.3 if any(p in answer_text for p in refusal_patterns) and num_context_docs > 0 else 0.0
 
     # 4. 组合（主信号占主导）
     reward = (

@@ -15,3 +15,11 @@ class ManualImages(BaseModel):
     title: Optional[str] = Field(
         description="标题内容，多个区块用换行符连接"
     )
+    surrounding_text: Optional[str] = Field(
+        default="",
+        description="图片周围相关文本段落，用于增强检索"
+    )
+    caption: Optional[str] = Field(
+        default="",
+        description="VLM 生成的图片内容中文描述"
+    )

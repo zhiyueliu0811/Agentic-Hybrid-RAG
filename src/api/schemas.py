@@ -16,11 +16,20 @@ class CitationItem(BaseModel):
     reason: str
 
 
+class ImageItem(BaseModel):
+    page: int | None = None
+    title: str = ""
+    image_path: str = ""
+    caption: str = ""
+    base64: str = ""
+    visual_score: float | None = None
+
+
 class ChatResponse(BaseModel):
     answer: str
-    cite_pages: list = Field(default_factory=list)
-    related_images: list = Field(default_factory=list)
-    citations: list = Field(default_factory=list)
+    cite_pages: list[int] = Field(default_factory=list)
+    related_images: list[ImageItem] = Field(default_factory=list)
+    citations: list[CitationItem] = Field(default_factory=list)
     citation_verified: bool = True
     citation_unsupported: int = 0
     rewritten_query: str = ""

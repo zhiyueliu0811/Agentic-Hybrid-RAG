@@ -85,6 +85,6 @@ async def chat_stream(req: ChatRequest):
 
         # 最终结果
         result = result_holder.get("result", {})
-        yield f"data: {json.dumps({'done': True, 'answer': result.get('answer', ''), 'cite_pages': result.get('cite_pages', []), 'elapsed': result.get('total_time', 0)}, ensure_ascii=False)}\n\n"
+        yield f"data: {json.dumps({'done': True, 'answer': result.get('answer', ''), 'cite_pages': result.get('cite_pages', []), 'related_images': result.get('related_images', []), 'elapsed': result.get('total_time', 0)}, ensure_ascii=False)}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")

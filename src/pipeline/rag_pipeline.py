@@ -8,6 +8,7 @@ import time
 
 from src.retriever.bm25_retriever import BM25
 from src.retriever.milvus_retriever import MilvusRetriever
+from src.retriever.visual_retriever import VisualRetriever
 from src.reranker.bge_m3_reranker import BGEM3ReRanker
 from src.constant import bge_reranker_tuned_model_path
 from src.utils import merge_docs, post_processing
@@ -30,12 +31,21 @@ class RAGPipeline:
     def __init__(self):
         self.bm25 = BM25(docs=None, retrieve=True)
         self.milvus = MilvusRetriever(docs=None, retrieve=True)
+        # 图片检索器（可选，建索引后可用）
+        self.visual = self._init_visual()
         self.reranker = BGEM3ReRanker(model_path=bge_reranker_tuned_model_path)
         self.query_agent = QueryAgent(llm_client=remote_llm, model_name=remote_model)
-        self.retrieval_agent = RetrievalAgent(self.bm25, self.milvus)
+        self.retrieval_agent = RetrievalAgent(self.bm25, self.milvus, self.visual)
         self.evidence_agent = EvidenceAgent(llm_client=remote_llm, model_name=remote_model)
         self.answer_agent = AnswerAgent(llm_client=local_llm, model_name=qwen3_8b_tune_model_name)
         self.citation_verifier = CitationVerifier(llm_client=remote_llm, model_name=remote_model)
+
+    def _init_visual(self):
+        """初始化图片检索器。如果索引未构建，降级为 None"""
+        try:
+            return VisualRetriever(retrieve=True)
+        except Exception:
+            return None
 
     @staticmethod
     def _default_result(query: str) -> dict:
@@ -124,6 +134,7 @@ class RAGPipeline:
         result["retrieval_time"] = f"{ret['elapsed']:.2f}s"
         result["_bm25_docs"] = ret["bm25_docs"]
         result["_milvus_docs"] = ret["milvus_docs"]
+        result["_visual_docs"] = ret.get("visual_docs", [])
 
         # Step 3: Rerank（空召回兜底）
         if not ret["merged_docs"]:
@@ -193,8 +204,9 @@ class RAGPipeline:
         result["citation_partial"] = cv.get("partial_count", 0)
         result["citation_details"] = cv["claim_results"]
 
-        # Step 7: Post Processing
-        answer_info = post_processing(response, ranked_docs)
+        # Step 7: Post Processing（加入图片检索结果）
+        visual_docs = result.get("_visual_docs", [])
+        answer_info = post_processing(response, ranked_docs, visual_docs)
         result["answer"] = answer_info["answer"]
         result["cite_pages"] = answer_info["cite_pages"]
         result["related_images"] = answer_info["related_images"]

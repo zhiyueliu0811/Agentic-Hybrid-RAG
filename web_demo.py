@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Web Demo：Gradio 可视化 Agentic RAG 完整管线
+# Web Demo：Gradio 可视化 Agentic RAG 完整管线（含图片展示）
 
 import gradio as gr
 
@@ -35,6 +35,9 @@ def _format_citations(claim_results):
     return "\n".join(lines)
 
 
+import os
+import traceback
+
 # Gradio UI
 pipeline = RAGPipeline()
 
@@ -48,13 +51,16 @@ css = """
 
 def ask(query):
     if not query.strip():
-        return [""] * 21
+        empty = [""] * 23
+        empty[2] = []  # gallery 在 outputs 的第 3 位（index 2）
+        return empty
     r = pipeline.run(query)
 
     rank_docs = r.get("_ranked_docs", [])
     rank_scores = r.get("_ranked_scores", [])
     bm25_docs = r.get("_bm25_docs", [])
     milvus_docs = r.get("_milvus_docs", [])
+    visual_docs = r.get("_visual_docs", [])
     images = r.get("related_images", [])
     cite_pages = r.get("cite_pages", [])
 
@@ -65,15 +71,28 @@ def ask(query):
     else:
         citation_verified = f"{r.get('citation_unsupported', 0)} 条未通过"
 
+    # 构建图片 Gallery 数据：[(path, caption), ...]
+    # 注意：Gradio Gallery 只接受文件路径，不能使用 base64 data URI
+    gallery_data = []
+    for img in images:
+        path = img.get("image_path", "")
+        label = img.get("title") or img.get("caption", "") or os.path.basename(path)
+        if path:
+            gallery_data.append((path, label))
+
+    visual_info = f"图片检索: {len(visual_docs)} 张  |  图片展示: {len(images)} 张"
+
     return [
         r.get("answer", ""),
-        f"引用页码: {cite_pages}  |  相关图片: {len(images)} 张  |  总耗时: {r.get('total_time', 0):.2f}s",
+        f"引用页码: {cite_pages}  |  {visual_info}  |  总耗时: {r.get('total_time', 0):.2f}s",
+        gallery_data,
         r.get("rewritten_query", query),
         r.get("query_type", ""),
         r.get("intent", ""),
         r.get("rewrite_reason", ""),
         r.get("bm25_count", 0),
         r.get("milvus_count", 0),
+        len(visual_docs),
         r.get("merged_count", 0),
         r.get("retrieval_time", "0.00s"),
         _format_ranked(rank_docs, rank_scores),
@@ -104,10 +123,18 @@ with gr.Blocks(title="Agentic Hybrid RAG — 特斯拉 Model 3 手册问答", cs
         )
         btn = gr.Button("提问", variant="primary", scale=1)
 
-    # ====== 最终答案（最显眼） ======
+    # ====== 最终答案 + 图片 ======
     gr.Markdown("### 回答")
     answer = gr.Textbox(label="答案内容", lines=6, elem_classes=["answer-box"])
     answer_meta = gr.Textbox(label="引用 / 图片 / 耗时", lines=1)
+
+    gr.Markdown("### 相关图片")
+    gallery = gr.Gallery(
+        label="手册中的相关图片",
+        columns=3,
+        height=300,
+        object_fit="contain",
+    )
 
     # ====== 管线详情（折叠） ======
     with gr.Accordion("管线中间过程", open=False):
@@ -118,10 +145,12 @@ with gr.Blocks(title="Agentic Hybrid RAG — 特斯拉 Model 3 手册问答", cs
             intent = gr.Textbox(label="意图分类", scale=1)
         rewrite_reason = gr.Textbox(label="改写原因", lines=2)
 
-        gr.Markdown("#### Step 2 — Hybrid Retrieval（混合检索）")
+        gr.Markdown("#### Step 2 — Hybrid Retrieval（三路混合检索）")
         with gr.Row():
             bm25_cnt = gr.Textbox(label="BM25 召回数")
             milvus_cnt = gr.Textbox(label="Milvus 召回数")
+            visual_cnt = gr.Textbox(label="图片检索数")
+        with gr.Row():
             merged_cnt = gr.Textbox(label="去重后数量")
             ret_time = gr.Textbox(label="检索耗时")
 
@@ -148,12 +177,12 @@ with gr.Blocks(title="Agentic Hybrid RAG — 特斯拉 Model 3 手册问答", cs
             bm25_sample = gr.Textbox(label="BM25 召回 Top3", lines=5)
             milvus_sample = gr.Textbox(label="Milvus 召回 Top3", lines=5)
 
-    gr.Markdown("<div class='footer'>Powered by Qwen-Plus + Qwen3-8B · BGE-M3 Reranker · BM25 + Milvus Hybrid Retrieval</div>")
+    gr.Markdown("<div class='footer'>Powered by Qwen-Plus + Qwen3-8B · BGE-M3 Reranker · BM25 + Milvus + Visual Retrieval</div>")
 
     outputs = [
-        answer, answer_meta,
+        answer, answer_meta, gallery,
         rewritten, query_type, intent, rewrite_reason,
-        bm25_cnt, milvus_cnt, merged_cnt, ret_time,
+        bm25_cnt, milvus_cnt, visual_cnt, merged_cnt, ret_time,
         ranked,
         ev_enough, ev_reason, self_rag,
         suggest_q, second_cnt,
@@ -164,4 +193,9 @@ with gr.Blocks(title="Agentic Hybrid RAG — 特斯拉 Model 3 手册问答", cs
 
     btn.click(fn=ask, inputs=inp, outputs=outputs)
 
-demo.launch(server_name="0.0.0.0", server_port=7860, share=False)
+demo.launch(
+    server_name="0.0.0.0",
+    server_port=7860,
+    share=False,
+    allowed_paths=["/root/autodl-tmp/RAG/data/saved_images"],
+)

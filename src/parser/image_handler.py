@@ -37,7 +37,7 @@ def handle_image(img: Tuple, img_index: int, page: fitz.Page) -> ManualImages | 
     base_image = page.parent.extract_image(xref)
 
     # 跳过小图标
-    if base_image["ext"] == "png" or base_image["width"] <= 34:
+    if base_image["ext"] == "png" and base_image["width"] <= 34:
         return None
 
     # 保存图片并获取路径
@@ -50,16 +50,19 @@ def handle_image(img: Tuple, img_index: int, page: fitz.Page) -> ManualImages | 
     # 获取关联文本块
     related_blocks = get_related_text_blocks(page, expanded_rect, img_rect.y0)
     title_blocks = [text for is_title, text in related_blocks if is_title]
+    all_text_blocks = [text for _, text in related_blocks]
 
     return ManualImages(
         image_path=image_path,
         page=page.number + 1,
-        title="\n".join(title_blocks)
+        title="\n".join(title_blocks),
+        surrounding_text="\n".join(all_text_blocks),
     )
 
 
 def save_image(base_image: dict, img_index: int, page_number: int) -> str:
     """保存图片到本地并返回路径"""
+    os.makedirs(image_save_dir, exist_ok=True)
     image_name = f"page{page_number + 1}_img{img_index + 1}.{base_image['ext']}"
     image_path = os.path.join(image_save_dir, image_name)
     with open(image_path, "wb") as f:

@@ -66,10 +66,10 @@ sleep 5
 echo "  semantic_chunk 已启动 (PID: $!)"
 
 # ------ 6. 启动 vLLM ------
-echo "[3/5] 启动 vLLM (Qwen3-8B int4)..."
-nohup $VLLM serve $PROJECT_DIR/LLaMA-Factory-main/output/qwen3_lora_sft_int4 \
-    --max-model-len 4096 \
-    --gpu-memory-utilization 0.75 \
+echo "[3/5] 启动 vLLM (Qwen3-8B ORPO v4 BF16)..."
+nohup $VLLM serve $PROJECT_DIR/LLaMA-Factory-main/output/qwen3_orpo_v4_bf16 \
+    --max-model-len 2048 \
+    --gpu-memory-utilization 0.85 \
     --enforce-eager \
     > $PROJECT_DIR/log/qwen3-7b.log 2>&1 &
 VLLM_PID=$!

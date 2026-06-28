@@ -31,3 +31,8 @@ bge_reranker_tuned_model_path = base_dir + "RAG-Retrieval/rag_retrieval/train/re
 bge_reranker_minicpm_path = base_dir + "models/bge-reranker-v2-minicpm-layerwise"
 text2vec_model_path = base_dir + "models/text2vec-base-chinese"
 qwen3_8b_tune_model_name = base_dir + "LLaMA-Factory-main/output/qwen3_lora_sft_int4"
+qwen3_orpo_v4_model_name = base_dir + "LLaMA-Factory-main/output/qwen3_orpo_v4_int4"
+
+# ---- 多模态 ----
+jina_clip_model_path = base_dir + "models/OFA-Sys/chinese-clip-vit-base-patch16"
+image_caption_cache_path = base_dir + "data/image_captions.json"

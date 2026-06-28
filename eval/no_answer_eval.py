@@ -37,8 +37,19 @@ OUTPUT_DIR = "data/eval_reports"
 
 
 def is_refused(pred_answer: str) -> bool:
-    """判断系统是否拒答"""
-    return "无答案" in pred_answer
+    """判断系统是否拒答（匹配"无答案"字面 或 礼貌拒答模式）"""
+    refusal_patterns = [
+        "无答案",
+        "无法回答",
+        "无法提供相关信息",
+        "根据提供的信息，无法确定",
+        "抱歉，我是特斯拉",
+        "抱歉，无法",
+        "无法执行该操作",
+        "只能回答与",
+        "没有相关信息",
+    ]
+    return any(p in pred_answer for p in refusal_patterns)
 
 
 def load_data(has_answer_limit: int) -> tuple:
