@@ -52,3 +52,5 @@ Thumbs.db
 # Claude Code session memory
 memory/
 .claude/
+PROJECT_STORY.md
+RL_EXPERIMENTS.md
